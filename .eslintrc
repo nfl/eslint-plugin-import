@@ -2,4 +2,5 @@
 env:
   node: true
 rules:
+  no-native-reassign: 0
   curly: [2, "multi"]
