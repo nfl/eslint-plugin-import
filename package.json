@@ -47,6 +47,7 @@
   "dependencies": {
     "babel-runtime": "5.8.19",
     "espree": "^2.0.1",
+    "find-root": "^0.1.1",
     "resolve": "^1.1.6"
   }
 }

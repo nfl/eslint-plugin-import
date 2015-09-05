@@ -43,10 +43,50 @@ function opts(basedir, settings) {
 module.exports = function (p, context) {
   // resolve just returns the core module id, which won't appear to exist
   if (resolve.isCore(p)) return p
+  var file;
+
+  var options = opts( path.dirname(context.getFilename())
+                                   , context.settings);
+
+  if (options && options.jspm === true) {
+    var findRoot = require('find-root');
+    var root = findRoot(process.cwd());
+    var pkg = require(path.join(root, 'package.json'));
+
+    if (pkg && pkg.jspm) {
+      var jspmModule = p.split('/')[0];
+      var target;
+
+      if (pkg.jspm.dependencies && pkg.jspm.dependencies[jspmModule]) {
+        target = pkg.jspm.dependencies[jspmModule];
+      }
+
+      if (pkg.jspm.dependencies && pkg.jspm.devDependencies[jspmModule]) {
+        target = pkg.jspm.devDependencies[jspmModule];
+      }
+
+      if (target) {
+        var targetPath = target.replace(':', '/');
+
+        if (targetPath) {
+          try {
+            file = resolve.sync(targetPath, options)
+            if (!fileExists(file)) return null
+            return file
+          } catch (err) {
+            if (err.message.indexOf('Cannot find module') === 0) {
+              return null
+            }
+
+            throw err
+          }
+        }
+      }
+    }
+  }
 
   try {
-    var file = resolve.sync(p, opts( path.dirname(context.getFilename())
-                                   , context.settings))
+    file = resolve.sync(p, options)
     if (!fileExists(file)) return null
     return file
   } catch (err) {
