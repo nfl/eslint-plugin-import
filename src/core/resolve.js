@@ -49,40 +49,43 @@ module.exports = function (p, context) {
                                    , context.settings);
 
   if (options && options.jspm === true) {
-    var findRoot = require('find-root');
-    var root = findRoot(process.cwd());
-    var pkg = require(path.join(root, 'package.json'));
+    try {
+      var findRoot = require('find-root');
+      var root = findRoot(process.cwd());
 
-    if (pkg && pkg.jspm) {
-      var jspmModule = p.split('/')[0];
-      var target;
+      var pkg = require(path.join(root, 'package.json'));
 
-      if (pkg.jspm.dependencies && pkg.jspm.dependencies[jspmModule]) {
-        target = pkg.jspm.dependencies[jspmModule];
-      }
+      if (pkg && pkg.jspm) {
+        var jspmModule = p.split('/')[0];
+        var target;
 
-      if (pkg.jspm.dependencies && pkg.jspm.devDependencies[jspmModule]) {
-        target = pkg.jspm.devDependencies[jspmModule];
-      }
+        if (pkg.jspm.dependencies && pkg.jspm.dependencies[jspmModule]) {
+          target = pkg.jspm.dependencies[jspmModule];
+        }
 
-      if (target) {
-        var targetPath = target.replace(':', '/');
+        if (pkg.jspm.dependencies && pkg.jspm.devDependencies[jspmModule]) {
+          target = pkg.jspm.devDependencies[jspmModule];
+        }
 
-        if (targetPath) {
-          try {
-            file = resolve.sync(targetPath, options)
-            if (!fileExists(file)) return null
-            return file
-          } catch (err) {
-            if (err.message.indexOf('Cannot find module') === 0) {
-              return null
+        if (target) {
+          var targetPath = target.replace(':', '/');
+
+          if (targetPath) {
+            try {
+              file = resolve.sync(targetPath, options)
+              if (!fileExists(file)) return null
+              return file
+            } catch (err) {
+              if (err.message.indexOf('Cannot find module') === 0) {
+                return null
+              }
+
+              throw err
             }
-
-            throw err
           }
         }
       }
-    }
+    } catch (err) {}
   }
 
   try {
